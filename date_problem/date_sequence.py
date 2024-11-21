@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta
 from collections import defaultdict
+import requests
 
 # Output:
 # for missing dates -> T05:00:00.000Z
@@ -35,9 +36,22 @@ def load_test_data(file_path):
     with open(file_path, "r") as f:
         return json.load(f)
 
+def fetch_data():
+    try:
+        response = requests.get("https://coderbyte.com/api/challenges/json/date-list", timeout=10)
+        data = response.json()
+        return data
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data: {e}")
+        return None
+
 def main():
     data = load_test_data("test_input.json")
     #data = sample_data
+#    data = fetch_data()
+#    if not data:
+#        print("Failed to fetch data. Exiting")
+#        return
 
     sorted_dates = sort_dates(data)
     start_date, end_date= get_start_end_date(sorted_dates)
@@ -46,6 +60,7 @@ def main():
 
     result = fill_missing_dates(start_date, end_date, grouped_dates)
     print(json.dumps(result, indent=4))
+    return result
 
 def group_items_by_date(data):
     grouped = {}
