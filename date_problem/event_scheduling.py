@@ -56,12 +56,15 @@ def merge_events(events):
     return {str(date) : detect_overlap(events[date]) for date in events}
 
 def detect_overlap(events: List) -> List[Dict]: 
-    merged_events = []
+    if not events:
+        return []
 
-    current_event = events[0].copy() 
+    merged_events = [events[0]]
 
     for i in range(1, len(events)):
+        current_event = merged_events[-1]
         next_event = events[i]
+
         next_start = datetime.strptime(next_event["start_time"], date_pattern)
         current_end = datetime.strptime(current_event["end_time"], date_pattern)
         
@@ -70,9 +73,6 @@ def detect_overlap(events: List) -> List[Dict]:
             current_event["title"] += f", {events[i]["title"]}"
         else:
             merged_events.append(current_event)
-            current_event = next_event.copy()
-
-    merged_events.append(current_event)
     
     return merged_events
 
