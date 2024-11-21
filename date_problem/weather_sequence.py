@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 import json
-from typing import TypedDict, List, Dict, Any, Tuple
+from typing import TypedDict, List, Dict, Tuple
 #input: [{"date": "2023-11-01T06:00:00.000Z", "temperature": 15}, ...]
 #Output: print(json.dumps(), indent=4)
 #Generate a new dataset that:
