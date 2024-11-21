@@ -44,64 +44,37 @@ def load_test_data(file_path):
 def main():
     data = load_test_data("events_data.json")
   
-    # This groups the events by the date, and it is already sorted by earliest start time
     grouped_events = group_events_by_date(data)
     
     summary = create_summary(grouped_events)
-    print(summary)
+    print(json.dumps(summary, indent=4))
 
     merged_events = merge_events(grouped_events)
-    print(merged_events)
+    print(json.dumps(merged_events, indent=4))
 
 def merge_events(events):
-   # merged_events = {}
-   # for date in events:
-   #     merged_events[str(date)] = detect_overlap(events[date])
-
-    #return merged_events
     return {str(date) : detect_overlap(events[date]) for date in events}
 
-def detect_overlap(events: List): 
-    events_list = []
+def detect_overlap(events: List) -> List[Dict]: 
+    merged_events = []
 
-    event_data = {
-        "start_time": "", 
-        "end_time": "", 
-        "title": ""
-    }
+    current_event = events[0].copy() 
 
-    current_end = datetime.strptime(events[0]["end_time"], date_pattern)
-
-    for i in range(len(events)):
-        next_start = datetime.strptime(events[i]["start_time"], date_pattern)
-        if i  == 0:
-            event_data = {  # Create a new dictionary
-                "start_time": events[i]["start_time"], 
-                "end_time": events[i]["end_time"], 
-                "title": f"{events[i]['title']}, "
-            }
-
-        elif i == (len(events)-1):
-            event_data["end_time"] = events[i]["end_time"] 
-            event_data["title"] += f"{events[i]["title"]}"
-            events_list.append(event_data)
-
-        elif next_start < current_end:
-            event_data["end_time"] = events[i]["end_time"] 
-            event_data["title"] += f"{events[i]["title"]}, "
-
+    for i in range(1, len(events)):
+        next_event = events[i]
+        next_start = datetime.strptime(next_event["start_time"], date_pattern)
+        current_end = datetime.strptime(current_event["end_time"], date_pattern)
+        
+        if next_start <= current_end:
+            current_event["end_time"] = max(current_event["end_time"], events[i]["end_time"])
+            current_event["title"] += f", {events[i]["title"]}"
         else:
-            event_data["title"] = event_data["title"].strip(", ")
-            events_list.append(event_data)
+            merged_events.append(current_event)
+            current_event = next_event.copy()
 
-            current_end = datetime.strptime(events[i]["end_time"], date_pattern)
-            event_data = {  # Create a new dictionary for the next event
-                "start_time": events[i]["start_time"],
-                "end_time": events[i]["end_time"],
-                "title": f"{events[i]['title']}, "
-            }
-
-    return events_list
+    merged_events.append(current_event)
+    
+    return merged_events
 
 # function works
 def group_events_by_date(events: List) -> Dict[date, List]:
@@ -113,18 +86,22 @@ def group_events_by_date(events: List) -> Dict[date, List]:
             grouped_data[date] = []
         grouped_data[date].append(event)
 
+    for date_key in grouped_data:
+        grouped_data[date_key].sort(key=lambda e: e["start_time"])
+
     return grouped_data
 
 # funciton should be working
 def create_summary(events: Dict) -> Dict:
     summary = {}
 
-    for date in events:
-        events_list = events[date]
+    for date, events_list in events.items():
         total_events = get_number_of_events(events_list)
-        earliest_time = get_earliest_start_time(events_list)
-        latest_time = get_latest_end_time(events_list)
+
+        earliest_time = min(events_list, key=lambda e: e["start_time"])["start_time"]
+        latest_time = max(events_list, key=lambda e: e["end_time"])["end_time"]
         duration = calculate_duration(earliest_time, latest_time)
+        
         summary[str(date)] = {
             "total_events": total_events,
             "earliest_start": earliest_time,
@@ -152,7 +129,7 @@ def get_latest_end_time(data: List) -> str:
 def calculate_duration(start_time, end_time):
     start = datetime.strptime(start_time, date_pattern)
     end = datetime.strptime(end_time, date_pattern)
-    return (end - start).seconds // 3600 
+    return (end - start).total_seconds() / 3600 
 
 if __name__ == "__main__":
     main() 
