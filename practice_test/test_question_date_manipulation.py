@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 import json
-from typing import Dict
+from typing import Dict, List
 # Sort the data by date in ascending order.
 # Fill in any missing dates between the earliest and latest date.
 # For missing dates:
@@ -27,14 +27,21 @@ time_value = "T08:00:00.000Z"
 date_pattern = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 def main(data):
+# Original implementation
+#    sorted_list = sort_list(data)
+#    grouped_dates = group_dates(sorted_list)
+#    min_date, max_date = find_start_end_dates(grouped_dates)
+#    all_dates = generate_all_dates(min_date, max_date)
+#    
+#    updated_data = update_data(all_dates, grouped_dates)
+#    print(json.dumps(updated_data, indent=4))
+
     sorted_list = sort_list(data)
     grouped_dates = group_dates(sorted_list)
     min_date, max_date = find_start_end_dates(grouped_dates)
-    all_dates = generate_all_dates(min_date, max_date)
-    
-    updated_data = update_data(all_dates, grouped_dates)
-    print(json.dumps(updated_data, indent=4))
+    updated_data = update_data(min_date, max_date, grouped_dates)
 
+    print(json.dumps(updated_data, indent=4))
     return updated_data
 
 def sort_list(data: list):
@@ -57,20 +64,37 @@ def find_start_end_dates(grouped_dates: Dict):
 
     return min_date, max_date
 
-def generate_all_dates(min_date: date, max_date: date) -> list:
-    return [min_date + timedelta(days=i) for i in range((max_date - min_date).days + 1)]
-
-def update_data(missing_dates: list, grouped_dates: dict):
+def update_data(min_date, max_date, grouped_data: Dict) -> List:
     updated_data = []
 
-    for date in missing_dates:
-        if date not in grouped_dates:
-            new_data = {"date": date.strftime(f"%Y-%m-%d{time_value}"), "value": 0}
-            updated_data.append(new_data)
+    current_date = min_date
+    
+    while current_date <= max_date:
+        if current_date in grouped_data:
+            updated_data.extend(grouped_data[current_date])
         else:
-            updated_data.extend(grouped_dates[date])
+            new_date = datetime.strftime(current_date, f"%Y-%m-%d{time_value}")
+            updated_data.append({"date":new_date, "value": 0})
+        current_date += timedelta(days=1)
 
     return updated_data
+
+# Original implementation
+# def generate_all_dates(min_date: date, max_date: date) -> list:
+#    return [min_date + timedelta(days=i) for i in range((max_date - min_date).days + 1)]
+
+# Original implementation
+# def update_data(missing_dates: list, grouped_dates: dict):
+#     updated_data = []
+# 
+#     for date in missing_dates:
+#         if date not in grouped_dates:
+#             new_data = {"date": date.strftime(f"%Y-%m-%d{time_value}"), "value": 0}
+#             updated_data.append(new_data)
+#         else:
+#             updated_data.extend(grouped_dates[date])
+# 
+#     return updated_data
 
 if __name__ == "__main__":
     main(data)
