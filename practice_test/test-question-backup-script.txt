@@ -1,0 +1,4 @@
+mkdir backup
+mv *.txt ./backup
+du -sh ./backup
+
