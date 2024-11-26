@@ -1,0 +1,16 @@
+mkdir project && cd project
+touch index.html style.css script.js
+
+cat << EOF > index.html
+<html>
+<head>
+	<title>Project</title>
+</head>
+<body>
+	<h1>Hello, World!</h1>
+</body>
+</html>
+EOF
+
+ls -l
+

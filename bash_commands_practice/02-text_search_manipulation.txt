@@ -1,0 +1,9 @@
+# Original attempt
+grep -n "error" log.txt | sed -i "warning" > log.txt
+cat log.txt
+
+# Correction
+grep -n "error" log.txt
+sed -i 's/error/warning/g' log.txt
+cat log.txt
+

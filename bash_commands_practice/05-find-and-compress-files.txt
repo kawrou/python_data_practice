@@ -1,0 +1,8 @@
+# Original solution:
+find *.log | tar -czf logs.tar.gz
+
+# Correction:
+find . -name "*.log" -print0 | tar --null -czf logs.tar.gz --files-from=-
+
+# Or if all log files are in current directory
+tar -czf logs.tar.gz *.log

@@ -1,0 +1,18 @@
+# Original solution
+mkdir backup
+cp *.txt backup
+du -sh backup
+
+
+# Correction
+
+mkdir -p backup
+
+if ls *.txt 1> /dev/null 2>&1; then
+	cp *.txt backup
+else
+	echo "No .txt found to copy."
+
+du -sh backup
+
+

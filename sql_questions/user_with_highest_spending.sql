@@ -7,6 +7,6 @@ FROM
 	INNER JOIN products on purchases.product_id = products.id
 GROUP BY
 	users.name
-ORDERD BY
+ORDER BY
 	total_spent DESC
 LIMIT 1
